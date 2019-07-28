@@ -12,6 +12,7 @@ openssl req -x509 -nodes -days 365 -newkey rsa:1024 -keyout mycert.pem -out myce
 Note: Here certificate name is mycert.pem.
 
 Compile the Client : gcc -Wall -o client  Client.c -L/usr/lib -lssl -lcrypto
+
 Run :   ./client <host_name> <port_number>
 
 Compile the Server : gcc -Wall -o server Server.c -L/usr/lib -lssl -lcrypto
