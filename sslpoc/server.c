@@ -36,20 +36,23 @@ int OpenListener(int port) {
         perror("Can't configure listening port");
         abort();
     }
-
+	// return descriptor of socket
     return sockfd;
 }
 
+// utility function to assert root privlage
 int isRoot() {
-    if (getuid() != 0) {
-        return 0;
-    }else {
-        return 1;
-    }
+	//check uid
+	if (getuid() != 0) {
+		return 0;
+	}else {
+		return 1;
+	}
 }
 
-SSL_CTX* InitServerCTX(void) {
-    SSL_METHOD *method;
+// init ssl server context for connection
+SSL_CTX *InitServerCTX(void) {
+   const SSL_METHOD *method;
     SSL_CTX *ctx;
 
     // load & register all cryptos, etc.
@@ -57,7 +60,7 @@ SSL_CTX* InitServerCTX(void) {
     // load all errors messages
     SSL_load_error_strings();
     // create new server-method instance
-    method = TLSv1_2_server_method();
+    method = TLS_server_method();
     // create new context from method
     ctx = SSL_CTX_new(method);
     if (ctx == NULL) {
@@ -103,7 +106,7 @@ void ShowCerts(SSL *ssl) {
         free(line);
         X509_free(cert);
     }else {
-        printf("No certificates.\n");
+        printf("No client certificates.\n");
     }
 }
 
@@ -111,17 +114,9 @@ void ShowCerts(SSL *ssl) {
 void Servlet(SSL *ssl) {
     char buff[1024] ={0};
     int sockfd, bytes;
-    const char *serverResponse = "<\Body>\
-                                <Name>aticleworld.com</Name>\
-    <year>1.5</year>\
-    <BlogType>Embedede and c\c++<\BlogType>\
-    <Author>amlendra<Author>\
-    <\Body>";
+    const char *serverResponse = "<Body><Name>aticleworld.com<\\Name><year>1.5<\\year><BlogType>Embedede and c\\c++<\\BlogType><Author>amlendra<\\Author><\\Body>";
 
-    const char *cpValidMessage = "<Body>\
-                                <UserName>aticle<UserName>\
-    <Password>123<Password>\
-    <\Body>";
+    const char *cpValidMessage = "<Body><UserName>aticle<UserName><Password>123<Password><\\Body>";
 
     if (SSL_accept(ssl) == FAIL) { // do SSL-protocol accept 
         ERR_print_errors_fp(stderr);
