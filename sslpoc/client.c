@@ -11,21 +11,22 @@
 
 #define FAIL -1
 
-int OpenConnection(const char *hostname, int port) {
-    int sockfd;
-    struct hostent *host;
-    struct sockaddr_in addr;
-
-    // try to get the host ip
-    if ((host = gethostbyname(hostname)) == NULL) {
-        perror(hostname);
-        abort();
-    }
-    // setup socket
-    sockfd = socket(PF_INET, SOCK_STREAM, 0);
-    bzero(&addr, sizeof(addr));
-
-    // set some options
+int OpenConnection(const char * hostname, int port) {
+	int sockfd;
+	struct hostent *host;
+	struct sockaddr_in addr;
+	
+	// get host ip
+	if ((host = gethostbyname(hostname)) == NULL) {
+		perror(hostname);
+		abort();
+	}
+	
+	// setup socket
+	sockfd =  socket(PF_INET, SOCK_STREAM, 0);
+	bzero(&addr, sizeof(addr));
+	
+	// set some options
     addr.sin_family = AF_INET;
     addr.sin_port = htons(port);
     addr.sin_addr.s_addr = *(long*)(host->h_addr);
@@ -37,11 +38,11 @@ int OpenConnection(const char *hostname, int port) {
         abort();
     }
 
-    return sockfd;
+    return sockfd;	
 }
 
-SSL_CTX* InitCTX(void) {
-    SSL_METHOD *method;
+SSL_CTX *InitCTX(void) {
+   const SSL_METHOD *method;
     SSL_CTX *ctx;
 
     // load cryptos, et.al.
@@ -49,7 +50,7 @@ SSL_CTX* InitCTX(void) {
     // bring in and register error messages
     SSL_load_error_strings();
     // create new client-method instance
-    method = TLSv1_2_client_method();
+    method = TLS_client_method();
     // create new context
     ctx = SSL_CTX_new(method);
     if (ctx == NULL) {
@@ -61,7 +62,7 @@ SSL_CTX* InitCTX(void) {
 
 void ShowCerts(SSL* ssl) {
     X509 *cert;
-    char * line;
+    char *line;
 
     // get the server's certificate
     cert = SSL_get_peer_certificate(ssl);
@@ -76,9 +77,8 @@ void ShowCerts(SSL* ssl) {
         // free the malloc'ed certificate copy
         X509_free(cert);
     }else{
-        printf("INFO: No client certificates configured");
+        printf("INFO: No server? certificates configured");
     }
-
 }
 
 int main(int count, char * strings[]) {
@@ -111,10 +111,13 @@ int main(int count, char * strings[]) {
     }else {
         char acUsername[16] = {0};
         char acPassword[16] = {0};
-        const char *cpRequestMessage = "<Body><UserName>%s<UserName><Password>%s<Password><\Body>";
+        const char *cpRequestMessage = "<Body><UserName>%s<UserName><Password>%s<Password><\\Body>";
         printf("Enter the User Name: ");
-        scanf("%s", acPassword);
+        scanf("%s", acUsername);
 
+		printf("\n\nEnter the Password : ");
+		scanf("%s", acPassword);
+		
         // construct reply
         sprintf(acClientRequest, cpRequestMessage, acUsername, acPassword);
 
